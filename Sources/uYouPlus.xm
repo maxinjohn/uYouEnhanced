@@ -432,14 +432,6 @@ YTMainAppControlsOverlayView *controlsOverlayView;
 + (id)spamSignalsDictionaryWithoutIDFA { return @{}; }
 %end
 
-%hook YTAdsInnerTubeContextDecorator
-- (void)decorateContext:(id)context { %orig(nil); }
-%end
-
-%hook YTAccountScopedAdsInnerTubeContextDecorator
-- (void)decorateContext:(id)context { %orig(nil); }
-%end
-
 %hook YTLocalPlaybackController
 - (id)createAdsPlaybackCoordinator { return nil; }
 %end
@@ -489,12 +481,6 @@ YTMainAppControlsOverlayView *controlsOverlayView;
 %hook YTDataUtils
 + (id)spamSignalsDictionary { return @{ @"ms": @"" }; }
 + (id)spamSignalsDictionaryWithoutIDFA { return @{}; }
-%end
-%hook YTAdsInnerTubeContextDecorator
-- (void)decorateContext:(id)context { %orig(nil); }
-%end
-%hook YTAccountScopedAdsInnerTubeContextDecorator
-- (void)decorateContext:(id)context { %orig(nil); }
 %end
 %hook YTLocalPlaybackController
 - (id)createAdsPlaybackCoordinator { return nil; }
