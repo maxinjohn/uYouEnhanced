@@ -24,6 +24,32 @@ if [ -z "$PATHTOYT" ]; then
     fi
 fi
 
+if [ -d "$PATHTOYT" ]; then
+    YOUTUBE_APP="$PATHTOYT"
+else
+    TEMP_DIR=$(mktemp -d)
+    trap 'rm -rf "$TEMP_DIR"' EXIT
+    unzip -q "$PATHTOYT" -d "$TEMP_DIR"
+    YOUTUBE_APP="$TEMP_DIR/Payload/YouTube.app"
+fi
+
+if [ ! -f "$YOUTUBE_APP/Info.plist" ]; then
+    echo "❌ Error: The IPA does not contain Payload/YouTube.app."
+    exit 1
+fi
+
+YOUTUBE_EXECUTABLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$YOUTUBE_APP/Info.plist")
+if ! otool -l "$YOUTUBE_APP/$YOUTUBE_EXECUTABLE" | awk '
+    $1 == "cryptid" {
+        found_encryption_info = 1
+        if ($2 != 0) encrypted = 1
+    }
+    END { exit !found_encryption_info || encrypted }
+'; then
+    echo "❌ Error: The YouTube IPA must be decrypted before patching. Use a decrypted IPA, not an App Store download."
+    exit 1
+fi
+
 make package THEOS_PACKAGE_SCHEME=rootless IPA="$PATHTOYT" FINALPACKAGE=1
 
 # SHASUM

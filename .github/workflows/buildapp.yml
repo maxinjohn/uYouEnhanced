@@ -129,6 +129,17 @@ jobs:
           mv YouTube.ipa YouTube.zip
           unzip -q YouTube.zip
           youtube_version=$(defaults read "$(pwd)/Payload/YouTube.app/Info" CFBundleVersion)
+          youtube_executable=$(defaults read "$(pwd)/Payload/YouTube.app/Info" CFBundleExecutable)
+          if ! otool -l "$(pwd)/Payload/YouTube.app/$youtube_executable" | awk '
+            $1 == "cryptid" {
+              found_encryption_info = 1
+              if ($2 != 0) encrypted = 1
+            }
+            END { exit !found_encryption_info || encrypted }
+          '; then
+            echo "::error title=Encrypted IPA::The YouTube IPA must be decrypted before patching. Use a decrypted IPA, not an App Store download."
+            exit 1
+          fi
           echo "==> YouTube v$youtube_version downloaded!"
           sed -i '' "17s#.*#YOUTUBE_VERSION = ${youtube_version}#g" Makefile
           echo "youtube_version=${youtube_version}" >> $GITHUB_OUTPUT
